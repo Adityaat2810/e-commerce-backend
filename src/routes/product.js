@@ -36,7 +36,13 @@ router.post("/product", async (req, res) => {
 });
 
 router.get("/product", async (req, res) => {
-    const productList = await Product.find().populate("category");
+    let filter = {};
+    if (req.query.categories) {
+        filter = {
+            category: req.query.categories.split(","),
+        };
+    }
+    const productList = await Product.find(filter).populate("category");
 
     //if wnat only specific field not the complete object
     //const productList = await Product.find().select(["name","image", "-_id"]); // -_id do not include id
@@ -126,6 +132,34 @@ router.delete("/product/:id", async (req, res) => {
                 error: err,
             });
         });
+});
+
+// get product count
+router.get("/get/product/count", async (req, res) => {
+    console.log("hi ");
+
+    const productCount = await Product.countDocuments();
+
+    if (!productCount) {
+        res.status(500).json({
+            success: false,
+        });
+    }
+
+    res.send({
+        count: productCount,
+    });
+});
+
+//get featured product
+router.get("/get/featured/:count", async (req, res) => {
+    const count = req.params.count ? req.params.count : 0;
+
+    const products = await Product.find({ isFeatured: true }).limit(+count);
+    if (!products) {
+        res.status(500).json({ success: false });
+    }
+    res.send(products);
 });
 
 module.exports = router;
