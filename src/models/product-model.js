@@ -20,10 +20,6 @@ const productSchema= mongoose.Schema({
     images:[{
         type:String
     }],
-    countInStock:{
-        type:Number,
-        required:true
-    },
     brand:{
         type:String,
         default:''
