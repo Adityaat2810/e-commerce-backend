@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Product = require("../models/product-model");
 const { Category } = require("../models/category-schema");
+const mongoose = require("mongoose");
 
 router.post("/product", async (req, res) => {
     // validating the category
@@ -52,8 +53,15 @@ router.get("/product", async (req, res) => {
 });
 
 router.get("/product/:id", async (req, res) => {
+    console.log(req.params.id);
+    // before doing anything first validate id
+    if (!mongoose.isValidObjectId(req.params.id)) {
+        return res.status(400).send("Invalid product id");
+    }
+
     // .poulate() put all the detail of other table
     //to which it is connected
+
     const productList = await Product.findById(req.params.id).populate(
         "category",
     );
@@ -69,6 +77,9 @@ router.get("/product/:id", async (req, res) => {
 });
 
 router.put("/product/:id", async (req, res) => {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+        return res.status(400).send("Invalid product id");
+    }
     const product = await Product.findByIdAndUpdate(
         req.params.id,
         {
@@ -94,27 +105,27 @@ router.put("/product/:id", async (req, res) => {
     res.send(product);
 });
 
-router.delete('/product/:id',async(req,res)=>{
-  Product.findByIdAndDelete(req.params.id).then(
-    product =>{
-      if(product){
-        return res.status(200).json({
-          success:true,
-          message:"successfully deleted the product"
+router.delete("/product/:id", async (req, res) => {
+    Product.findByIdAndDelete(req.params.id)
+        .then((product) => {
+            if (product) {
+                return res.status(200).json({
+                    success: true,
+                    message: "successfully deleted the product",
+                });
+            } else {
+                return res.status(404).json({
+                    success: false,
+                    message: "failed to delete product",
+                });
+            }
         })
-      }else{
-        return res.status(404).json({
-          success:false,
-          message:"failed to delete product"
-        })
-      }
-    }
-  ).catch(err =>{
-    return res.status(500).json({
-      success:false,
-      error:err
-    })
-  })
-})
+        .catch((err) => {
+            return res.status(500).json({
+                success: false,
+                error: err,
+            });
+        });
+});
 
 module.exports = router;
