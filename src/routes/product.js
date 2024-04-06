@@ -5,6 +5,7 @@ const { Category } = require("../models/category-schema");
 const mongoose = require("mongoose");
 
 router.post("/product", async (req, res) => {
+    console.log('i am here ')
     // validating the category
     const category = await Category.findById(req.body.category);
     if (!category) {
